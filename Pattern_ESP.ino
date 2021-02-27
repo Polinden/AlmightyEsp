@@ -26,12 +26,19 @@ GTimer myTimer(MS, 5000);
 WiFiClientSecure client;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 7200, 60000);
-boolean relayS [4];
-int relaySPins [4]={5,4,4,4};
+boolean relayS [2];
+int relaySPins [2]={5,4};
+struct Reltime{
+  int start_h; 
+  int stop_h; 
+  int start_m; 
+  int stop_m; 
+};
+Reltime relaySTimes [2]={{-1,-1,-1,-1},{-1,-1,-1,-1}};
 
 #define DEVNAME "MishRelay"
 #define OTAPAS "admin"
-
+#define NUMRELAY 2
 
 void setup_OTA(){
   ArduinoOTA.setHostname(DEVNAME);
@@ -78,14 +85,49 @@ void setup_Server(){
        send_mes_WS("data ", "error");
        request->send(200, "text/plain", "Not-OK");
   });
+
+
+    webServer.on("/Timer", HTTP_GET, [] (AsyncWebServerRequest *request) {
+       String message;
+       String st;
+       int num=0;
+       if (request->hasParam("number")) {
+          message = request->getParam("number")->value();
+          num=atoi(message.c_str())-1;  
+          if (request->hasParam("time")) {
+             message = request->getParam("time")->value();
+             if (request->hasParam("st")) {
+                 st = request->getParam("st")->value();     
+                 updateTimer(num, message.c_str(), st.c_str());        
+                 request->send(200, "text/plain", "OK");
+                 return;
+             }
+           }     
+       }
+       send_mes_WS("data ", "error");
+       request->send(200, "text/plain", "Not-OK");
+  });
   
   webServer.onNotFound(notFound);
   webServer.begin();
 }
 
+void updateTimer(int n, const char * time, const char * st){
+    if (n<0 || n>=NUMRELAY) {send_mes_WS("data ", "error"); return;}
+    if (strcmp(st, "start")==0){
+         relaySTimes[n].start_h=parseTime(time)/60;
+         relaySTimes[n].start_m=parseTime(time)%60;
+      }
+    else {
+         relaySTimes[n].stop_h=parseTime(time)/60;
+         relaySTimes[n].stop_m=parseTime(time)%60;
+      }
+    send_mes_WS("test ", time);
+}
+
 
 void updateRelay(int n, boolean stat){
-    if (n<0 || n>3) {send_mes_WS("data ", "error"); return;}
+    if (n<0 || n>=NUMRELAY) {send_mes_WS("data ", "error"); return;}
     relayS[n]=stat;
     digitalWrite(relaySPins[n], stat?1:0);
     char str[20], st[2]; 
@@ -161,7 +203,7 @@ void getJsonData(char * json){
 
 
 void initRelays(){
-   for (int i=0; i<4; i++) {
+   for (int i=0; i<NUMRELAY; i++) {
       relayS[i]=false;
       pinMode(relaySPins[i], OUTPUT);
       digitalWrite(relaySPins[i], 0);
@@ -169,11 +211,33 @@ void initRelays(){
 }
 
 
+int parseTime(const char * c){
+   int h=0;
+   int m=0;
+   char substr [3];
+   char * p=strstr(c, ":");
+   if(p!=NULL) {
+       strncpy(substr, c, (int)(p-c)); 
+       h=atoi(substr);
+       strncpy(substr, p+1, 2); 
+       m=atoi(substr);
+       if(strstr(c, "PM") != NULL) h+=12;
+   }
+   return h*60+m;
+}
+
+
 void informListeners(){
-   char buf [50];
+   char buf [200];
    DynamicJsonDocument doc(1024);
-   for (int i=0; i<4; i++) { 
+   for (int i=0; i<NUMRELAY; i++) { 
       doc["relay"][i]=relayS[i];
+   }
+   for (int i=0; i<NUMRELAY; i++) { 
+      doc["timer"][i]["start_h"]=relaySTimes[i].start_h;
+      doc["timer"][i]["start_m"]=relaySTimes[i].start_m;
+      doc["timer"][i]["stop_h"]=relaySTimes[i].stop_h;
+      doc["timer"][i]["stop_m"]=relaySTimes[i].stop_m;
    }
    serializeJson(doc, buf);
    send_mes_WS("status", buf);
