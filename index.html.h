@@ -34,7 +34,7 @@ HTMLPAGE = R"===(
     color:silver;
     border:2px dashed #2E9AFE;
     padding:5px;
-    width:120px;
+    width:110px;
     margin-left:5px;
   }
   .bootstrap-timepicker-widget table td input {
@@ -54,7 +54,7 @@ HTMLPAGE = R"===(
 <table class="table table-bordered">
         <tbody>
         <tr style="border-top: 3px solid white">
-            <th scope="row" id="data-1">Relay 1</th>
+            <th scope="row" id="data-1">R1</th>
             <td>
                 <div class="btn-group-lg" role="group" aria-label="Relay 1">
                     <button type="button" class="btn btn-success" id="on-1" onclick="setRelay(1, true);">On</button>
@@ -88,7 +88,7 @@ HTMLPAGE = R"===(
         </tr>
 
         <tr>
-            <th scope="row" id="data-2">Relay 2</th>
+            <th scope="row" id="data-2">R2</th>
             <td>
                 <div class="btn-group-lg" role="group" aria-label="Relay 2">
                     <button type="button" class="btn btn-success" id="on-2" onclick="setRelay(2, true);">On</button>
@@ -171,14 +171,14 @@ HTMLPAGE = R"===(
           var y=JSON.parse(e)["relay"];
           for (var i=0; i<y.length; i++){
         if (y[i]) {
-            document.getElementById("data-"+(i+1).toString()).innerHTML="Relay-"+(1+i).toString()+" On";
+            document.getElementById("data-"+(i+1).toString()).innerHTML="R-"+(1+i).toString()+" On";
             document.getElementById("on-"+(i+1).toString()).disabled=true;
             document.getElementById("off-"+(i+1).toString()).disabled=false;
         }
         else {
-            document.getElementById("data-"+(i+1).toString()).innerHTML="Relay-"+(1+i).toString()+" Off";
-            document.getElementById("on-"+(i+1).toString()).disabled=true;
-            document.getElementById("off-"+(i+1).toString()).disabled=false;
+            document.getElementById("data-"+(i+1).toString()).innerHTML="R-"+(1+i).toString()+" Off";
+            document.getElementById("on-"+(i+1).toString()).disabled=false;
+            document.getElementById("off-"+(i+1).toString()).disabled=true;
         }
            } 
            var q=JSON.parse(e)["timer"];
