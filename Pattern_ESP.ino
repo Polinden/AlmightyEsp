@@ -18,6 +18,12 @@
 #include <ArduinoJson.h> 
 #include "index.html.h"
 
+
+#define DEVNAME "MishRelay"
+#define OTAPAS "admin"
+#define NUMRELAY 2
+
+
 AsyncWebServer webServer(80);
 AsyncWebSocket ws("/ws");
 AsyncHTTPRequest request;
@@ -34,11 +40,10 @@ struct Reltime{
   int start_m; 
   int stop_m; 
 };
-Reltime relaySTimes [2]={{-1,-1,-1,-1},{-1,-1,-1,-1}};
+Reltime relaySTimes [2]={{100,100,100,100},{100,100,100,100}};
+int cur_h;
+int cur_m;
 
-#define DEVNAME "MishRelay"
-#define OTAPAS "admin"
-#define NUMRELAY 2
 
 void setup_OTA(){
   ArduinoOTA.setHostname(DEVNAME);
@@ -130,12 +135,6 @@ void updateRelay(int n, boolean stat){
     if (n<0 || n>=NUMRELAY) {send_mes_WS("data ", "error"); return;}
     relayS[n]=stat;
     digitalWrite(relaySPins[n], stat?1:0);
-    char str[20], st[2]; 
-    strcpy(str, "relay ");
-    itoa(n+1, st, 10);
-    strcat(str, st);
-    if (stat) strcat(str, " is on."); else strcat(str, " is of.");
-    send_mes_WS("data ", str);
 }
 
 
@@ -191,10 +190,25 @@ void NTP_setup(){
 
 void getTimePeriodic(){
    if (myTimer.isReady()) {
+     cur_h=timeClient.getHours();
+     cur_m=timeClient.getMinutes();
      send_mes_WS("time:", timeClient.getFormattedTime().c_str());  
      informListeners();
+     checkRelay();
    }
 }
+
+
+void checkRelay(){
+     int z=cur_h*60+cur_m;
+     for (int i=0; i<NUMRELAY; i++) {
+      int x=relaySTimes[i].start_h*60+relaySTimes[i].start_m;
+      int y=relaySTimes[i].stop_h*60+relaySTimes[i].stop_m;
+      if (z>=y) {updateRelay(i, false); relaySTimes[i].stop_h=100; relaySTimes[i].stop_m=100;}
+      else if (z>=x) {updateRelay(i, true); relaySTimes[i].start_h=100; relaySTimes[i].start_m=100;}   
+   }
+}
+
 
 void getJsonData(char * json){
    DynamicJsonDocument doc(1024);
@@ -238,6 +252,8 @@ void informListeners(){
       doc["timer"][i]["start_m"]=relaySTimes[i].start_m;
       doc["timer"][i]["stop_h"]=relaySTimes[i].stop_h;
       doc["timer"][i]["stop_m"]=relaySTimes[i].stop_m;
+      doc["time"]["h"]=cur_h;
+      doc["time"]["m"]=cur_m;
    }
    serializeJson(doc, buf);
    send_mes_WS("status", buf);
