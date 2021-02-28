@@ -24,7 +24,7 @@ HTMLPAGE = R"===(
   }  
   @media (max-width : 480px) {
       mobile_fix {
-    padding:0;
+      padding:0;
       }
   }
   #time
@@ -34,7 +34,7 @@ HTMLPAGE = R"===(
     color:silver;
     border:2px dashed #2E9AFE;
     padding:5px;
-    width:160px;
+    width:120px;
     margin-left:5px;
   }
   .bootstrap-timepicker-widget table td input {
@@ -53,7 +53,7 @@ HTMLPAGE = R"===(
 
 <table class="table table-bordered">
         <tbody>
-        <tr>
+        <tr style="border-top: 3px solid white">
             <th scope="row" id="data-1">Relay 1</th>
             <td>
                 <div class="btn-group-lg" role="group" aria-label="Relay 1">
@@ -75,7 +75,7 @@ HTMLPAGE = R"===(
             </div>
             </td>
         </tr>
-        <tr>
+        <tr style="border-bottom: 3px solid white">
             <th scope="row">R1 Finish</th>
             <td>
             <div class="input-group bootstrap-timepicker timepicker">
@@ -109,7 +109,7 @@ HTMLPAGE = R"===(
             </div>
             </td>
         </tr>
-        <tr>
+        <tr style="border-bottom: 3px solid white">
             <th scope="row">R2 Finish</th>
             <td>
             <div class="input-group bootstrap-timepicker timepicker">
@@ -120,7 +120,7 @@ HTMLPAGE = R"===(
             </div>
             </td>
         </tr>
-        <tr>
+        <tr style="border-bottom: 3px solid white">
             <th scope="row">Time</th>
             <td>
                 <p id="time"></p>
@@ -170,9 +170,16 @@ HTMLPAGE = R"===(
           console.log(e);
           var y=JSON.parse(e)["relay"];
           for (var i=0; i<y.length; i++){
-              s="data-"+(i+1).toString();
-              if (y[i]) document.getElementById(s).innerHTML="Relay-"+(1+i).toString()+" On";
-              else document.getElementById(s).innerHTML="Relay-"+(1+i).toString()+" Off";
+        if (y[i]) {
+            document.getElementById("data-"+(i+1).toString()).innerHTML="Relay-"+(1+i).toString()+" On";
+            document.getElementById("on-"+(i+1).toString()).disabled=true;
+            document.getElementById("off-"+(i+1).toString()).disabled=false;
+        }
+        else {
+            document.getElementById("data-"+(i+1).toString()).innerHTML="Relay-"+(1+i).toString()+" Off";
+            document.getElementById("on-"+(i+1).toString()).disabled=true;
+            document.getElementById("off-"+(i+1).toString()).disabled=false;
+        }
            } 
            var q=JSON.parse(e)["timer"];
            for (var i=0; i<q.length; i++){
@@ -249,6 +256,7 @@ HTMLPAGE = R"===(
 
 </body>
 </html>
+
 
 
 
