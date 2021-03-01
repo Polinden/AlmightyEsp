@@ -182,7 +182,7 @@ HTMLPAGE = R"===(
         else {
         this.rText[i]="Off";
         this.rDis1=false;   
-        this.rDis2=true;                d
+        this.rDis2=true;                
       this.rColor[i]="green";   
         }
            } 
