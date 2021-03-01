@@ -26,7 +26,7 @@ int cur_h;
 int cur_m;
 
 
-GTimer myTimer(MS, 5000);
+GTimer myTimer(MS, 2000);
 
 
 void setup_Server(){
