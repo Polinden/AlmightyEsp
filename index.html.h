@@ -53,7 +53,7 @@ HTMLPAGE = R"===(
 <h2>ESP Relay</h2>
 <table  id="app" class="table table-bordered">
   <tbody v-for="n in numRel">
-        <tr style="border-top: 3px solid white">
+      <tr style="border-top: 3px solid white">
       <th scope="row" :id="'data-'+n"  :style="{ 'color': rColor[n-1] }">R{{n}} {{rText[n-1]}}</th>
             <td>
                 <div class="btn-group-lg" role="group" aria-label="Relay">
@@ -172,45 +172,45 @@ HTMLPAGE = R"===(
           e=data.substring(i+1);
           console.log(e);
           var y=JSON.parse(e)["relay"];
-          for (var i=0; i<y.length; i++){
+      for (var i=0; i<y.length; i++){
         if (y[i]) {
         this.rText[i]="On";
-        this.rDis1=true;    
-        this.rDis2=false;   
-          this.rColor[i]="red";       
+        this.rDis1[i]=true;    
+        this.rDis2[i]=false;   
+        this.rColor[i]="red";       
         }
         else {
         this.rText[i]="Off";
-        this.rDis1=false;   
-        this.rDis2=true;                
-      this.rColor[i]="green";   
-        }
-           } 
-           var q=JSON.parse(e)["timer"];
-           for (var i=0; i<q.length; i++){
+        this.rDis1[i]=false;   
+        this.rDis2[i]=true;                
+        this.rColor[i]="green";   
+            }
+      } 
+        var q=JSON.parse(e)["timer"];
+        for (var i=0; i<q.length; i++){
               if ((q[i].start_h)<100) {
                 r3="AM";
                 r1=q[i].start_h;
                 if (r1>12) {r1-=12; r3="PM";}
-        this.sDis1=true;  
-        this.sAct1=false;       
+        this.sDis1[i]=true;  
+        this.sAct1[i]=false;       
                 $('#timepicker'+(i*2+1).toString()).timepicker('setTime', r1+':'+q[i].start_m+r3);        
               }
               else{
-        this.sDis1=false;
-        this.sAct1=true;  
+        this.sDis1[i]=false;
+        this.sAct1[i]=true;  
               }
               if ((q[i].stop_h)<100) {
                 r3="AM";
                 r1=q[i].stop_h;
                 if (r1>12) {r1-=12; r3="PM";}
-        this.sDis2=true;
-        this.sAct2=false; 
+        this.sDis2[i]=true;
+        this.sAct2[i]=false; 
                 $('#timepicker'+(i*2+2).toString()).timepicker('setTime', r1+':'+q[i].stop_m+r3);
               }
               else {
-        this.sDis2=false;
-        this.sAct2=true;  
+        this.sDis2[i]=false;
+        this.sAct2[i]=true;  
               }  
              }      
          };
@@ -243,16 +243,16 @@ HTMLPAGE = R"===(
   }
     return {
     numRel: NumRelays,
-      connection: null,
-      time: "00:00:00",
-      rColor: z1,
+    connection: null,
+    time: "00:00:00",
+    rColor: z1,
     rText: z2,
     rDis1: z3,
     rDis2: z4,
     sDis1: z5,
-      sDis2: z6,
+    sDis2: z6,
     sAct1: z7,
-      sAct2: z8
+    sAct2: z8
     }
   },
   created: function() {
