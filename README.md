@@ -71,23 +71,21 @@
    - Количество реле (в HTML файле index.html.h)
 
 ### Pattern_ESP.ino
-<code>
-#define DEVNAME "MishRelay"<br/>
-#define OTAPAS "admin"<br/>
-#define PINS_NUM 2<br/>
-#define PINS_AR {5,4}<br/>
-#define NTPSERV "europe.pool.ntp.org"<br/>
-
-</code>
+<pre>
+#define DEVNAME "MishRelay"
+#define OTAPAS "admin"
+#define PINS_NUM 2
+#define PINS_AR {5,4}
+#define NTPSERV "europe.pool.ntp.org"
+</pre>
 
 ### index.html.h
 <code>
- /*<br/>
-  NUMBERS OF RELAYS<br/>
-  */<br/>
-  var NumRelays=2;<br/>
-</code>
-<br/>
+ /*
+  NUMBERS OF RELAYS
+  */
+  var NumRelays=2;
+</pre>
 <br/>
 
 ## Итог
