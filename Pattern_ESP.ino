@@ -13,6 +13,7 @@
 #define OTAPAS "admin"
 #define PINS_NUM 2
 #define PINS_AR {5,4}
+#define NTPSERV "europe.pool.ntp.org"
 
 WiFiUDP ntpUDP;
 NTPClient * timeClient=NULL;
@@ -113,7 +114,7 @@ void setup_WS(){
 }
 
 void NTP_setup(){
-  timeClient=new NTPClient(ntpUDP, "europe.pool.ntp.org", 7200, 60000); 
+  timeClient=new NTPClient(ntpUDP, NTPSERV, 7200, 60000); 
   timeClient->begin();  
 }
 

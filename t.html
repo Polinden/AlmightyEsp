@@ -45,28 +45,33 @@
 </head>
 <body>
 <h2>ESP Relay</h2>
-
 <table  id="app" class="table table-bordered">
-	<tbody v-for="n in 2">
+	<tbody v-for="n in numRel">
         <tr style="border-top: 3px solid white">
-	    <th scope="row" :id="'data-'+n">R{{n}}</th>
+			<th scope="row" :id="'data-'+n"  :style="{ 'color': rColor[n-1] }">R{{n}} {{rText[n-1]}}</th>
             <td>
                 <div class="btn-group-lg" role="group" aria-label="Relay">
-                    <button type="button" class="btn btn-success" :id="'on-'+n" :onclick="'setRelay('+n+', true);'">On</button>
-                    <button type="button" class="btn btn-danger" :id="'off-'+n" :onclick="'setRelay('+n+', false);'">Off
+                    <button :disabled="rDis1[n-1]"  type="button" class="btn btn-success" :id="'on-'+n" :onclick="'setRelay('+n+', true);'">
+							On
+					</button>
+                    <button :disabled="rDis2[n-1]"  type="button" class="btn btn-danger" :id="'off-'+n" :onclick="'setRelay('+n+', false);'">
+							Off
                     </button>
                 </div>
             </td>
         </tr>
-
-        <tr>
-	<th scope="row">R{{n}} Start</th>
+       <tr>
+	        <th scope="row">R{{n}} Start</th>
             <td>
             <div class="input-group bootstrap-timepicker timepicker">
             <input :id="'timepicker'+n1(n)" type="text" class="form-control input-small">
             <span class="input-group-addon"><i class="fas fa-clock"></i></span>
-                    <button type="button" class="btn btn-secondary" :id="'send-'+n1(n)" :onclick="s1(n)">  OK </button>
-                    <button type="button" class="btn btn-light" :id="'clear-'+n1(n)" :onclick="d1(n)"> No </button>
+			        <button  :disabled="sDis1[n-1]"  type="button" class="btn" :class="{'btn-secondary': sAct1[n-1]}" :id="'send-'+n1(n)" :onclick="s1(n)">  
+							OK 
+					</button>
+                    <button type="button" class="btn btn-light" :id="'clear-'+n1(n)" :onclick="d1(n)"> 
+							No 
+					</button>
             </div>
             </td>
         </tr>
@@ -76,8 +81,12 @@
             <div class="input-group bootstrap-timepicker timepicker">
             <input :id="'timepicker'+n2(n)" type="text" class="form-control input-small">
             <span class="input-group-addon"><i  class="fas fa-clock"></i></span>
-                    <button type="button" class="btn btn-secondary" :id="'send-'+n2(n)" :onclick="s2(n)"> OK </button>
-                    <button type="button" class="btn btn-light" :id="'clear-'+n2(n)" :onclick="d2(n)"> No </button>
+                    <button  :disabled="sDis2[n-1]"  type="button" class="btn" :class="{'btn-secondary': sAct2[n-1]}" :id="'send-'+n2(n)" :onclick="s2(n)"> 
+							OK 
+					</button>
+                    <button type="button" class="btn btn-light" :id="'clear-'+n2(n)" :onclick="d2(n)"> 
+							No 
+					</button>
             </div>
             </td>
         </tr>
@@ -93,6 +102,10 @@
  </table>
 
 <script>
+  /*
+	NUMBERS OF RELAYS
+  */
+  var NumRelays=2;
 
   var app = new Vue({
   el: '#app',
@@ -155,14 +168,16 @@
           var y=JSON.parse(e)["relay"];
           for (var i=0; i<y.length; i++){
 	      if (y[i]) {
-	          document.getElementById("data-"+(i+1).toString()).innerHTML="R"+(1+i).toString()+" On";
-	          document.getElementById("on-"+(i+1).toString()).disabled=true;
-	          document.getElementById("off-"+(i+1).toString()).disabled=false;
+			  this.rText[i]="On";
+			  this.rDis1=true;		
+			  this.rDis2=false;		
+		  	  this.rColor[i]="red";	      
 	      }
 	      else {
-	          document.getElementById("data-"+(i+1).toString()).innerHTML="R"+(1+i).toString()+" Off";
-	          document.getElementById("off-"+(i+1).toString()).disabled=true;
-	          document.getElementById("on-"+(i+1).toString()).disabled=false;
+			  this.rText[i]="Off";
+			  this.rDis1=false;		
+			  this.rDis2=true;			          d
+		  this.rColor[i]="green";	  
 	      }
            } 
            var q=JSON.parse(e)["timer"];
@@ -171,25 +186,25 @@
                 r3="AM";
                 r1=q[i].start_h;
                 if (r1>12) {r1-=12; r3="PM";}
-                $('#timepicker'+(i*2+1).toString()).timepicker('setTime', r1+':'+q[i].start_m+r3);
-                document.querySelector('#send-'+(i*2+1).toString()).disabled=true;
-                document.querySelector('#send-'+(i*2+1).toString()).classList.remove('btn-secondary');
+				this.sDis1=true;	
+				this.sAct1=false;			  
+                $('#timepicker'+(i*2+1).toString()).timepicker('setTime', r1+':'+q[i].start_m+r3);			  
               }
               else{
-                document.querySelector('#send-'+(i*2+1).toString()).disabled=false;
-                document.querySelector('#send-'+(i*2+1).toString()).classList.add('btn-secondary');
+				this.sDis1=false;
+				this.sAct1=true;	
               }
               if ((q[i].stop_h)<100) {
                 r3="AM";
                 r1=q[i].stop_h;
                 if (r1>12) {r1-=12; r3="PM";}
+				this.sDis2=true;
+				this.sAct2=false;	
                 $('#timepicker'+(i*2+2).toString()).timepicker('setTime', r1+':'+q[i].stop_m+r3);
-                document.querySelector('#send-'+(i*2+2).toString()).disabled=true;   
-                document. querySelector('#send-'+(i*2+2).toString()).classList.remove('btn-secondary');   
               }
               else {
-                document.querySelector('#send-'+(i*2+2).toString()).disabled=false;
-                document.querySelector('#send-'+(i*2+2).toString()).classList.add('btn-secondary'); 
+				this.sDis2=false;
+				this.sAct2=true;	
               }  
              }      
          };
@@ -202,9 +217,38 @@
     }   
   },
   data: function() {
+
+
+    z1=[];
+	z2=[];
+	z3=[];			  
+	z4=[];	
+	z5=[];
+	z6=[];	
+	z7=[];
+	z8=[];		
+    for (var i=0; i<NumRelays; i++) {
+		z1.push("yellow");
+		z2.push("Off");	
+		z3.push(false);		
+		z4.push(true);		
+		z5.push(false);		
+		z6.push(false);		
+		z7.push(true);		
+		z8.push(true);		
+	}
     return {
+	  numRel: NumRelays,
       connection: null,
-      time: "00:00:00"	    
+      time: "00:00:00",
+      rColor: z1,
+	  rText: z2,
+	  rDis1: z3,
+	  rDis2: z4,
+	  sDis1: z5,
+      sDis2: z6,
+	  sAct1: z7,
+      sAct2: z8
     }
   },
   created: function() {
@@ -241,15 +285,14 @@
     var ltp=$('.timepicker').length;
     for (var i=1; i<=ltp; i++){        
     $('#timepicker'+i.toString()).timepicker({
-                minuteStep: 5,
-                showInputs: false,
-          disableFocus: true, 
+         minuteStep: 5,
+         showInputs: false,
+		 disableFocus: true, 
     icons:{
-                   up: 'fas fa-angle-up',
-                   down: 'fas fa-angle-down'
-               }
-
-             }); 
+         up: 'fas fa-angle-up',
+		 down: 'fas fa-angle-down'
+          }
+      }); 
     };
 </script>
 
