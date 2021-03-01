@@ -72,21 +72,25 @@
 
 ### Pattern_ESP.ino
 <code>
-#define DEVNAME "MishRelay"
-#define OTAPAS "admin"
-#define PINS_NUM 2
-#define PINS_AR {5,4}
-#define NTPSERV "europe.pool.ntp.org"
+#define DEVNAME "MishRelay"<br/>
+#define OTAPAS "admin"<br/>
+#define PINS_NUM 2<br/>
+#define PINS_AR {5,4}<br/>
+#define NTPSERV "europe.pool.ntp.org"<br/>
+
 </code>
 
 ### index.html.h
 <code>
- /*
-  NUMBERS OF RELAYS
-  */
-  var NumRelays=2;
+ /*<br/>
+  NUMBERS OF RELAYS<br/>
+  */<br/>
+  var NumRelays=2;<br/>
 </code>
+<br/>
+<br/>
 
+##Итог
 
 Собственно и все. Выбирайте в Arduino IDE опции заливки программы (следую обучалкам) и загружайте ее по проводам в плату (только в этот раз). 
 
