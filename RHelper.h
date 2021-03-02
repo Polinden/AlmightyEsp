@@ -15,9 +15,9 @@
 
 typedef void (*ListenerHTTP) (void*, AsyncHTTPRequest*, int);
 
-class ReqestS {
+class ReqestSHelper {
 public:
-    ReqestS();
+    ReqestSHelper();
     ~ReqestS();
     int getHTTPSRequest(char * host, int port, char * url, char * dest, size_t len);
     void geRequestAsync(char * url);
@@ -30,16 +30,15 @@ private:
 
 
 
-ReqestS::ReqestS(){
+ReqestSHelper::ReqestS(){
    request=new AsyncHTTPRequest();
    client=new WiFiClientSecure(); 
 }
 
-
-ReqestS::~ReqestS(){    
+ReqestSHelper::~ReqestSHelper(){    
 }
  
-int ReqestS::getHTTPSRequest(char * host, int port, char * url, char * dest, size_t len){
+int ReqestSHelper::getHTTPSRequest(char * host, int port, char * url, char * dest, size_t len){
        HTTPClient http;
        http.useHTTP10(true);
        client->setInsecure(); 
@@ -52,7 +51,7 @@ int ReqestS::getHTTPSRequest(char * host, int port, char * url, char * dest, siz
 }
     
 
-void ReqestS::geRequestAsync(char * url){
+void ReqestSHelper::getRequestAsync(char * url){
   static bool requestOpenResult;
   if (request->readyState() == readyStateUnsent || request->readyState() == readyStateDone)
   {
@@ -62,8 +61,21 @@ void ReqestS::geRequestAsync(char * url){
 }
 
 
-void ReqestS::registerListener(ListenerHTTP lis){
+void ReqestSHelper::registerListener(ListenerHTTP lis){
    request->onReadyStateChange(lis);
+}
+
+
+void ReqestSHelper::postRequest(char * url, char * playload)
+{ 
+  static bool requestOpenResult;
+  if (request.readyState() == readyStateUnsent || request.readyState() == readyStateDone)
+  {      
+    requestOpenResult = request.open("POST", (url + playload).c_str() );    
+    if (requestOpenResult)
+    {
+      request.send();
+    }
 }
 
 
