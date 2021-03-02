@@ -7,6 +7,7 @@
 #include <GyverTimer.h> 
 #include "index.html.h"
 #include "Relay.h"
+#include "RHelper.h"
 
 
 #define DEVNAME "MishRelay"

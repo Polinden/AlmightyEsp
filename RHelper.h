@@ -18,10 +18,11 @@ typedef void (*ListenerHTTP) (void*, AsyncHTTPRequest*, int);
 class ReqestSHelper {
 public:
     ReqestSHelper();
-    ~ReqestS();
+    ~ReqestSHelper();
     int getHTTPSRequest(char * host, int port, char * url, char * dest, size_t len);
-    void geRequestAsync(char * url);
+    void getRequestAsync(char * url);
     void registerListener(ListenerHTTP);
+    void postRequest(char * url, char * playload);
 
 private:
    AsyncHTTPRequest * request;
@@ -30,7 +31,7 @@ private:
 
 
 
-ReqestSHelper::ReqestS(){
+ReqestSHelper::ReqestSHelper(){
    request=new AsyncHTTPRequest();
    client=new WiFiClientSecure(); 
 }
@@ -69,13 +70,17 @@ void ReqestSHelper::registerListener(ListenerHTTP lis){
 void ReqestSHelper::postRequest(char * url, char * playload)
 { 
   static bool requestOpenResult;
-  if (request.readyState() == readyStateUnsent || request.readyState() == readyStateDone)
+  char buf[1000];
+  strcat(buf, url);
+  strcat(buf, playload);
+  if (request->readyState() == readyStateUnsent || request->readyState() == readyStateDone)
   {      
-    requestOpenResult = request.open("POST", (url + playload).c_str() );    
+    requestOpenResult = request->open("POST", buf);    
     if (requestOpenResult)
     {
-      request.send();
+      request->send();
     }
+  }
 }
 
 
