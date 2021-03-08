@@ -30,13 +30,14 @@ HTMLPAGE = R"===(
   }
   #time
   {
-    margin-top:5px;
-    font-size:25px;
+    margin-top:3px;
+    font-size:20px;
     color:silver;
     border:2px dashed #2E9AFE;
     padding:5px;
-    width:120px;
+    width:92px;
     margin-left:5px;
+    margin-bottom:3px;
   }
   .bootstrap-timepicker-widget table td input {
     font-size: 70%;
@@ -54,7 +55,7 @@ HTMLPAGE = R"===(
 <table  id="app" class="table table-bordered">
   <tbody v-for="n in numRel">
       <tr style="border-top: 3px solid white">
-      <th scope="row" :id="'data-'+n"  :style="{ 'color': rColor[n-1] }">R{{n}} {{rText[n-1]}}</th>
+      <th scope="row" :id="'data-'+n"  :style="{ 'color': rColor[n-1] }">R{{n}} is {{rText[n-1]}}</th>
             <td>
                 <div class="btn-group-lg" role="group" aria-label="Relay">
                     <button :disabled="rDis1[n-1]"  type="button" class="btn btn-success" :id="'on-'+n" :onclick="'setRelay('+n+', true);'">
@@ -67,7 +68,19 @@ HTMLPAGE = R"===(
             </td>
         </tr>
        <tr>
-          <th scope="row">R{{n}} Start</th>
+          <th scope="row">Start
+       <div style="margin-top: 5px" class="progress">
+           <div
+             class="progress-bar"
+             role="progressbar"
+            :style="{width: timePass[n-1]}"
+             aria-valuenow="100"
+             aria-valuemin="100"
+             aria-valuemax="100">
+           </div>
+        </div> 
+          
+          </th>
             <td>
             <div class="input-group bootstrap-timepicker timepicker">
             <input :id="'timepicker'+n1(n)" type="text" class="form-control input-small">
@@ -82,7 +95,18 @@ HTMLPAGE = R"===(
             </td>
         </tr>
         <tr style="border-bottom: 3px solid white">
-  <th scope="row">R{{n}} Finish</th>
+     <th scope="row">Finish
+        <div style="margin-top: 5px" class="progress">
+           <div
+             class="progress-bar"
+             role="progressbar"
+            :style="{width: timeLapse[n-1]}"
+             aria-valuenow="100"
+             aria-valuemin="100"
+             aria-valuemax="100">
+           </div>
+        </div> 
+      </th>
             <td>
             <div class="input-group bootstrap-timepicker timepicker">
             <input :id="'timepicker'+n2(n)" type="text" class="form-control input-small">
@@ -211,14 +235,21 @@ HTMLPAGE = R"===(
               else {
         this.sDis2[i]=false;
         this.sAct2[i]=true;  
-              }  
-             }      
-         };
+              };  
+        var p=JSON.parse(e)["time"];
+        if (typeof c == 'undefined') c=new Date().getHours()*60+new Date().getMinutes();
+        a=p.h*60+p.m+(new Date()).getSeconds()/60;
+        b=q[i].stop_h*60+q[i].stop_m;
+        d=q[i].start_h*60+q[i].start_m;
+        this.timeLapse[i]=100.0-((b-a)*100.0)/(b-c)+'%';   
+        this.timePass[i]=100.0-((d-a)*100.0)/(d-c)+'%';                    
+       }
+      };
      //case 3      
      if (data.startsWith("test")){
           i=data.indexOf(":");
           e=data.substring(i+1);
-         console.log(e);
+          console.log(e);
         };
     }   
   },
@@ -230,7 +261,9 @@ HTMLPAGE = R"===(
   z5=[];
   z6=[];  
   z7=[];
-  z8=[];    
+  z8=[];  
+  z9=[]; 
+  z10=[];      
     for (var i=0; i<NumRelays; i++) {
     z1.push("yellow");
     z2.push("Off"); 
@@ -240,6 +273,8 @@ HTMLPAGE = R"===(
     z6.push(false);   
     z7.push(true);    
     z8.push(true);    
+    z9.push("0%");  
+    z10.push("0%");  
   }
     return {
     numRel: NumRelays,
@@ -252,7 +287,9 @@ HTMLPAGE = R"===(
     sDis1: z5,
     sDis2: z6,
     sAct1: z7,
-    sAct2: z8
+    sAct2: z8,
+    timeLapse: z9,
+    timePass: z10
     }
   },
   created: function() {
@@ -294,7 +331,7 @@ HTMLPAGE = R"===(
      disableFocus: true, 
     icons:{
          up: 'fas fa-angle-up',
-     down: 'fas fa-angle-down'
+         down: 'fas fa-angle-down'
           }
       }); 
     };

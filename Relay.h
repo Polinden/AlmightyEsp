@@ -62,6 +62,10 @@ void RelayTimer::updateRelay(int n, boolean stat){
     if (n<0 || n>=numRelays) return;
     relayS[n]=stat;
     digitalWrite(relaySPins[n], stat?1:0);
+    char buf [10];
+    itoa(n,buf,10);
+    strcat(buf, stat?"=on":"=off");
+    informListeners("relay", buf);
 }
 
 

@@ -1,7 +1,5 @@
 
 
-
-
 #include <ArduinoJson.h>
 #define MAXLIS 10
 

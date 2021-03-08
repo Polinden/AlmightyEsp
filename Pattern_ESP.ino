@@ -1,5 +1,4 @@
 
-
 #include <ESPAsync_WiFiManager.h>    
 #include <ArduinoOTA.h>  
 #include <NTPClient.h>  
@@ -7,7 +6,8 @@
 #include <GyverTimer.h> 
 #include "index.html.h"
 #include "Relay.h"
-#include "RHelper.h"
+#include "MQTT.h"
+//#include "RHelper.h"
 
 
 #define DEVNAME "MishRelay"
@@ -15,6 +15,7 @@
 #define PINS_NUM 2
 #define PINS_AR {5,4}
 #define NTPSERV "europe.pool.ntp.org"
+#define MQTTSERV "192.168.77.30"
 
 WiFiUDP ntpUDP;
 NTPClient * timeClient=NULL;
@@ -22,12 +23,13 @@ AsyncWebServer webServer(80);
 AsyncWebSocket ws("/ws");
 DNSServer dnsServer; 
 RelayTimer * myRelays=NULL;
+MqtTHelper * myMQTT=NULL;
 int pins [] = PINS_AR;
 int cur_h;
 int cur_m;
 
 
-GTimer myTimer(MS, 2000);
+GTimer myTimer(MS, 1000);
 
 
 void setup_Server(){
@@ -86,7 +88,7 @@ void notFound(AsyncWebServerRequest *request) {
 }
 
 void send_mes_WS(const char * topic, const char * text){
-  char str[2000];
+  char str[500];
   strcpy(str, topic);
   strcat(str, " : ");
   strcat(str, text);
@@ -128,7 +130,9 @@ void setup()
     setup_Server();
     NTP_setup(); 
     myRelays = new RelayTimer(PINS_NUM, pins); 
+    myMQTT = new MqtTHelper(MQTTSERV);
     myRelays->addListener(send_mes_WS);
+    myRelays->addListener(&MqtTHelper::pubMqttMessage);
 }
 
 
