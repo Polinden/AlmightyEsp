@@ -159,7 +159,7 @@ HTMLPAGE = R"===(
        return "sendClear("+n+",'stop')";
     },
     connectWS : function(){
-            console.log('Trying connect to WS...');       
+      console.log('Trying connect to WS...');       
       this.connection  = new WebSocket('ws://'+ window.location.hostname + '/ws');
       this.connection.onopen = function(e) {
       console.log("[open] Connection established");
@@ -192,25 +192,26 @@ HTMLPAGE = R"===(
         };
     //case 2  
      if (data.startsWith("status")){
-          i=data.indexOf(":");
-          e=data.substring(i+1);
-          console.log(e);
-          var y=JSON.parse(e)["relay"];
-      for (var i=0; i<y.length; i++){
-        if (y[i]) {
-        this.rText[i]="On";
-        this.rDis1[i]=true;    
-        this.rDis2[i]=false;   
-        this.rColor[i]="red";       
+       i=data.indexOf(":");
+       e=data.substring(i+1);
+       var jq=JSON.parse(e);
+       console.log(e);
+       var y=jq["relay"];          
+       for (var i=0; i<y.length; i++){
+         if (y[i]) {
+           this.rText[i]="On";
+           this.rDis1[i]=true;    
+           this.rDis2[i]=false;   
+           this.rColor[i]="red";       
         }
         else {
-        this.rText[i]="Off";
-        this.rDis1[i]=false;   
-        this.rDis2[i]=true;                
-        this.rColor[i]="green";   
+          this.rText[i]="Off";
+          this.rDis1[i]=false;   
+          this.rDis2[i]=true;                
+          this.rColor[i]="green";   
             }
       } 
-        var q=JSON.parse(e)["timer"];
+        var q=jq["timer"];
         for (var i=0; i<q.length; i++){
               if ((q[i].start_h)<100) {
                 r3="AM";
@@ -236,11 +237,12 @@ HTMLPAGE = R"===(
         this.sDis2[i]=false;
         this.sAct2[i]=true;  
               };  
-        var p=JSON.parse(e)["time"];
+        var p=jq["time"];
         if (typeof c == 'undefined') c=new Date().getHours()*60+new Date().getMinutes();
-        a=p.h*60+p.m+(new Date()).getSeconds()/60;
-        b=q[i].stop_h*60+q[i].stop_m;
-        d=q[i].start_h*60+q[i].start_m;
+        var a=p.h*60+p.m+(new Date()).getSeconds()/60;
+        var bh=q[i].stop_h==24?0:(q[i].stop_h*60);
+        var b=bh+q[i].stop_m;
+        var d=q[i].start_h*60+q[i].start_m;
         this.timeLapse[i]=100.0-((b-a)*100.0)/(b-c)+'%';   
         this.timePass[i]=100.0-((d-a)*100.0)/(d-c)+'%';                    
        }

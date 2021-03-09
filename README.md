@@ -66,17 +66,19 @@
 - применить незначительные настройки, указав, в частности:
    - Имя устройства (как оно отображается в сети)
    - пароль к обновлению "по воздуху"
-   - NTP сервер и Ваш часовой пояс
-   - Список пинов (GPIO), к которым Вы подключили реле (одно или много) в файле Pattern_ESP.ino
-   - Количество реле (в HTML файле index.html.h)
+   - Число и список пинов (GPIO), к которым Вы подключили реле (одно или много) в файле Pattern_ESP.ino
+  - NTP сервер и Ваш часовой пояс
+  - адрес MQTT сервера
+  - Количество реле (в HTML файле index.html.h)
 
-### Pattern_ESP.ino
+### settings.h
 <pre>
 #define DEVNAME "MishRelay"
 #define OTAPAS "admin"
 #define PINS_NUM 2
 #define PINS_AR {5,4}
 #define NTPSERV "europe.pool.ntp.org"
+#define MQTTSERV "192.168.77.30"
 </pre>
 
 ### index.html.h

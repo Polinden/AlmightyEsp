@@ -88,7 +88,7 @@ int RelayTimer::parseTime(const char * c){
    char substr [3];
    char * p=strstr(c, ":");
    if(p!=NULL) {
-       strncpy(substr, c, (int)(p-c)); 
+       strncpy(substr, c, (size_t)(p-c)); 
        h=atoi(substr);
        strncpy(substr, p+1, 2); 
        m=atoi(substr);
@@ -100,7 +100,7 @@ int RelayTimer::parseTime(const char * c){
 
 void RelayTimer::reportListeners(int cur_h, int cur_m){
    char buf [200];
-   DynamicJsonDocument doc(1024);
+   DynamicJsonDocument doc(512);
    for (int i=0; i<numRelays; i++) { 
       doc["relay"][i]=relayS[i];
    }
