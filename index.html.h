@@ -241,8 +241,9 @@ HTMLPAGE = R"===(
         if (typeof c == 'undefined') c=new Date().getHours()*60+new Date().getMinutes();
         var a=p.h*60+p.m+(new Date()).getSeconds()/60;
         var bh=q[i].stop_h==24?0:(q[i].stop_h*60);
+        var dh=q[i].start_h==24?0:(q[i].start_h*60);
         var b=bh+q[i].stop_m;
-        var d=q[i].start_h*60+q[i].start_m;
+        var d=dh+q[i].start_m;
         this.timeLapse[i]=100.0-((b-a)*100.0)/(b-c)+'%';   
         this.timePass[i]=100.0-((d-a)*100.0)/(d-c)+'%';                    
        }

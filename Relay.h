@@ -71,7 +71,8 @@ void RelayTimer::updateRelay(int n, boolean stat){
 
 
 void RelayTimer::checkRelay(int cur_h, int cur_m, boolean with_report=true){
-     int z=cur_m+cur_h*60;
+     int z=cur_m+cur_hh*60;
+     if (cur_h==0) z=cur_m+24*60;
      for (int i=0; i<numRelays; i++) {
       int x=relaySTimes[i].start_h*60+relaySTimes[i].start_m;
       int y=relaySTimes[i].stop_h*60+relaySTimes[i].stop_m;

@@ -7,7 +7,7 @@
 #include <GyverTimer.h> 
 #include "index.html.h"
 #include "Relay.h"
-#include "MQTT.h"
+//#include "MQTT.h"
 //#include "RHelper.h"
 
 
@@ -113,7 +113,7 @@ void setup_WS(){
 }
 
 void NTP_setup(){
-  timeClient=new NTPClient(ntpUDP, NTPSERV, 7200, 60000); 
+  timeClient=new NTPClient(ntpUDP, NTPSERV, TIMESHIFT, 60000); 
   timeClient->begin();  
 }
 
