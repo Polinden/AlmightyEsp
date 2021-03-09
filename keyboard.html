@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Business And Office Set Icons Template | PrepBootstrap</title>
+<title>Keyboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" crossorigin="anonymous">
@@ -14,7 +14,7 @@
     <div class="row">
         <div v-for="n in 5" class="col-md-6 offset-md-4">
 		<template v-for="m in 5">
-            <button type="button" class="btn btn-icon"><i class="fa fa-user fa-2x" :class="faar[100*n+m*3]" aria-hidden="true"></i></button>{{ ' ' }}
+            <button type="button" class="btn btn-icon"><i class="fa fa-user fa-2x" :class="faar[rnd*n+m*3]" aria-hidden="true"></i></button>{{ ' ' }}
 		</template>
         </div>
     </div>
@@ -43,10 +43,14 @@
 var app = new Vue({
   el: '#app',
   data: {
-    faar: fontawesome_icons 
+    faar: fontawesome_icons,
+    rnd:  getRandomInt(100)	  
   }
 });
 console.log(app.faar.length);
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}	
 </script>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
