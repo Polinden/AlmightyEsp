@@ -1,7 +1,7 @@
-
 #include <ArduinoJson.h>
 #include "settings.h"
 #define MAXLIS 10
+#define RELAY_ADD
 
 struct Reltime{
       int start_h; 

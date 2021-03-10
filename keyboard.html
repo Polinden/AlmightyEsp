@@ -8,19 +8,30 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" crossorigin="anonymous">
 </head>
 
-<body><br><h1 class="text-sm-center">Keyboard:</h1><br>
+<body><br><br>
 
-<div class="container" id="app">
+<div class="container" id="app">    
+    <div class="row">
+        <div class="col-xs-8 col-sm-9 col-md-10 offset-md-2 offset-lg-0 col-lg-12 text-center">
+          <h1>Keyboard</h1>
+	</div>
+    </div>
     <div class="row">
         <div v-for="n in 5" class="col-md-6 offset-md-4">
 		<template v-for="m in 5">
-            <button type="button" class="btn btn-icon"><i class="fa fa-user fa-2x" :class="faar[rnd*n+m*3]" aria-hidden="true"></i></button>{{ ' ' }}
+            <button :id="(n-1)*5+m" @click="inform" type="button" class="btn btn-icon"><i class="fa fa-2x" :class="faar[rnd*n+m*3]" aria-hidden="true"></i></button>{{ ' ' }}
 		</template>
         </div>
     </div>
 </div>
 
 <style>
+    body { background: #DADED4;}
+    h1 {color: #68A9CF}
+    h1, h2, h3, h4, h5, h6 {
+        text-align: center;
+	width: 100%;
+    }
     .btn-icon {
         background-color: #68A9CF;
         color: #fff;
@@ -45,7 +56,13 @@ var app = new Vue({
   data: {
     faar: fontawesome_icons,
     rnd:  getRandomInt(100)	  
-  }
+  },
+  methods: {
+    inform: function(event) {
+       console.log(event.currentTarget.querySelector('i').classList[2]);           console.log(event.currentTarget.id);
+    }
+
+  }		
 });
 console.log(app.faar.length);
 function getRandomInt(max) {

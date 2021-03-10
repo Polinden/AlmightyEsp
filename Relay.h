@@ -1,6 +1,3 @@
-
-
-
 #include "Relay_timer.h"
 
 
@@ -71,13 +68,17 @@ void RelayTimer::updateRelay(int n, boolean stat){
 
 
 void RelayTimer::checkRelay(int cur_h, int cur_m, boolean with_report=true){
-     int z=cur_m+cur_hh*60;
-     if (cur_h==0) z=cur_m+24*60;
+     int z,x,y=0;
      for (int i=0; i<numRelays; i++) {
-      int x=relaySTimes[i].start_h*60+relaySTimes[i].start_m;
-      int y=relaySTimes[i].stop_h*60+relaySTimes[i].stop_m;
+      z=cur_m+cur_h*60;
+      x=relaySTimes[i].start_h*60+relaySTimes[i].start_m;
+      y=relaySTimes[i].stop_h*60+relaySTimes[i].stop_m;
+      if (cur_h==0 && relaySTimes[i].stop_h==24) z=cur_m+24*60;      
       if (z>=y) {updateRelay(i, false); relaySTimes[i].stop_h=100; relaySTimes[i].stop_m=100;}
-      else if (z>=x) {updateRelay(i, true); relaySTimes[i].start_h=100; relaySTimes[i].start_m=100;}   
+      else {
+         if (cur_h==0 && relaySTimes[i].start_h==24) z=cur_m+24*60;   
+         if (z>=x) {updateRelay(i, true); relaySTimes[i].start_h=100; relaySTimes[i].start_m=100;}   
+      }
       if (with_report) reportListeners(cur_h, cur_m);
    }
 }
