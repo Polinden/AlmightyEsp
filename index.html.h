@@ -343,8 +343,5 @@ HTMLPAGE = R"===(
 </body>
 </html>
 
-
-
-
 )===";
 }
