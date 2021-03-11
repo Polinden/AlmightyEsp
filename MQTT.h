@@ -1,99 +1,93 @@
 
-#include <Ticker.h>
-#include <AsyncMqttClient.h>
+#include <PubSubClient.h>
+#include "settings.h"
 #define MQTT_PORT 1883
 #define MQTT_ADD
+#define MAX_TRY 10
+#define DELAY_MQ 2000
+#ifdef ESP32
+#include <WiFi.h>
+#endif
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#endif
 
-AsyncMqttClient mqttClient;
-Ticker mqttReconnectTimer;
 
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 
 class MqtTHelper{
-
 public:
-    MqtTHelper(const char* ip);
+    MqtTHelper(const char* ip, const char* pub="", const char* sub="");
     ~MqtTHelper(); 
     static void pubMqttMessage(const char* topic, const char* payload);
+    static void reconnect();
+    static unsigned long tries;
+    static unsigned long all_tries;
+    static bool published;
+    static bool dissabled;
+    static char pub_topic [20];
+    static char sub_topic [20];
 private:
-    static void connectToMqtt();
-    static void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
-    static void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total); 
-    #ifdef ESP8266
-    static void onWifiConnect(const WiFiEventStationModeGotIP& event); {
-    #endif
-    #ifdef ESP32
-    static void WiFiEvent(WiFiEvent_t event); 
-    #endif 
+    static void callback(char* topic, byte* payload, unsigned int length);
 };
 
 
-MqtTHelper::MqtTHelper(const char* host){
+MqtTHelper::MqtTHelper(const char* host, const char* pub, const char* sub)  {
   auto ip=new IPAddress();
   if (ip->fromString(host)) {
-       mqttClient.onDisconnect(&MqtTHelper::onMqttDisconnect);
-       mqttClient.onMessage(&MqtTHelper::onMqttMessage);
-       mqttClient.setServer(*ip, MQTT_PORT);
-       #ifdef ESP32
-       WiFi.onEvent(WiFiEvent);
-       #endif
-       #ifdef ESP8266
-       WiFi.onStationModeGotIP(onWifiConnect);
-       #endif
-       connectToMqtt();
+  client.setServer(*ip, 1883);
+  client.setCallback(&MqtTHelper::callback);
+  client.subscribe (sub);
+  strncpy(pub_topic, pub, strlen(pub));
+  strncpy(sub_topic, sub, strlen(sub));
+  dissabled=false;
   }
 }
 
 MqtTHelper::~MqtTHelper(){
 }
 
-void MqtTHelper::connectToMqtt() {
-  if (mqttClient.connected()) return;
-  mqttClient.connect();
-}
 
-void MqtTHelper::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-  if (WiFi.status() == WL_CONNECTED) {
-     mqttReconnectTimer.once(2, connectToMqtt);
-  }
-}
-
-void MqtTHelper::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
-    Serial.println("Publish received.");
-    Serial.print("  topic: ");
-    Serial.println(topic);
-    Serial.print("  qos: ");
-    Serial.println(properties.qos);
-    Serial.print("  dup: ");
-    Serial.println(properties.dup);
-    Serial.print("  retain: ");
-    Serial.println(properties.retain);
-    Serial.print("  len: ");
-    Serial.println(len);
-    Serial.print("  index: ");
-    Serial.println(index);
-    Serial.print("  total: ");
-    Serial.println(total);
+void MqtTHelper::reconnect() {
+        if (dissabled) return;
+        client.loop ();
+        if (all_tries>MAX_TRY) return;
+        if (client.connected()) {
+            all_tries=0;
+            return;  
+        };
+        if ((millis()-tries)>DELAY_MQ) {
+            tries=millis();
+            client.connect(DEVNAME);
+            client.subscribe(sub_topic);
+            all_tries++;
+        };
 }
 
 void MqtTHelper::pubMqttMessage(const char* topic, const char* payload){
-    if (mqttClient.connected()){
-       mqttClient.publish(topic, 1, true, payload);
+    if (dissabled) return;
+    if (strcmp(topic, pub_topic)!=0) return;
+    if (client.connected()){
+       published=client.publish(topic, payload, true);
     }
 }
 
-#ifdef ESP8266
-void MqtTHelper::onWifiConnect(const WiFiEventStationModeGotIP& event) {
-  connectToMqtt();
+void MqtTHelper::callback(char* topic, byte* payload, unsigned int length) {
+        Serial.print("Message arrived [");
+        Serial.print(topic);
+        Serial.print("] ");
+        for (int i = 0; i < length; i++) {
+            Serial.print((char)payload[i]);
+        }
+        Serial.println();
 }
-#endif
-#ifdef ESP32
-void MqtTHelper::WiFiEvent(WiFiEvent_t event) {
-    switch(event) {
-    case SYSTEM_EVENT_STA_GOT_IP:
-        connectToMqtt();
-        break;
-    default: break;    
-    }
-}
-#endif
+
+
+unsigned long MqtTHelper::tries=millis();
+bool  MqtTHelper::published=false;
+unsigned long  MqtTHelper::all_tries=0;
+char MqtTHelper::pub_topic [20]="";
+char MqtTHelper::sub_topic [20]="";
+bool MqtTHelper::dissabled=true;

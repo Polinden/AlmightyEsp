@@ -5,10 +5,11 @@
 #include <ArduinoOTA.h>  
 #include <NTPClient.h>  
 #include <WiFiUdp.h>
+#include <EEPROM.h>
 #include <GyverTimer.h> 
 #include "index.html.h"
 #include "Relay.h"
-//#include "MQTT.h"
+#include "MQTT.h"
 //#include "RHelper.h"
 
 
@@ -24,6 +25,7 @@ MqtTHelper * myMQTT=NULL;
 int pins [] = PINS_AR;
 int cur_h;
 int cur_m;
+bool initialConfig = false;
 
 
 GTimer myTimer(MS, 1000);
@@ -100,12 +102,40 @@ void setup_OTA(){
 }
 
 
-void setup_WiFiManager(){
-  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, DEVNAME);
-  //ESPAsync_wifiManager.resetSettings();  
-  ESPAsync_wifiManager.autoConnect(DEVNAME);
-  if (WiFi.status() == WL_CONNECTED) { Serial.print(F("C onnected. Local IP: ")); Serial.println(WiFi.localIP()); }
-  else { Serial.println(ESPAsync_wifiManager.getStatus(WiFi.status())); }
+void setup_WiFiManager(char * mqtt, size_t len) {
+    ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, DEVNAME);
+    //ESPAsync_wifiManager.resetSettings();  
+    if (ESPAsync_wifiManager.WiFi_SSID()=="") initialConfig=true;
+    if (initialConfig) {
+      #ifdef MQTT_ADD
+      ESPAsync_WMParameter MQTT_name ("MQTT_ip_label", "MQTT_ip", mqtt, len+1);
+      ESPAsync_wifiManager.addParameter(&MQTT_name);
+      #endif
+      if (ESPAsync_wifiManager.startConfigPortal(DEVNAME, "admin")) {
+         #ifdef MQTT_ADD
+         strcpy(mqtt, MQTT_name.getValue());
+         for(int i=0;i<len;i++) EEPROM.write(0x0F+i, mqtt[i]); 
+         EEPROM.commit(); 
+         #endif
+      }
+      else {
+         ESPAsync_wifiManager.resetSettings();
+         #ifdef ESP8266
+         ESP.reset();
+         #else    
+         ESP.restart();
+         #endif
+         delay(6000);
+      };
+    };
+    #ifdef MQTT_ADD
+    for(int i=0;i<len;i++) mqtt[i]=(char)EEPROM.read(0x0F+i); 
+    mqtt[len]='\0';
+    #endif
+    Serial.println(mqtt);
+    WiFi.waitForConnectResult();
+    if (WiFi.status() == WL_CONNECTED) { Serial.print(F("Connected. Local IP: ")); Serial.println(WiFi.localIP()); }
+    else { Serial.println("Not connected!");}
 }
 
 void setup_WS(){
@@ -120,8 +150,12 @@ void NTP_setup(){
 
 void setup()
 {
-    Serial.begin(115200); while (!Serial); delay(200);
-    setup_WiFiManager();
+    Serial.begin(115200); 
+    while (!Serial); 
+    EEPROM.begin(512);
+    delay(200);
+    char MQTT_string_ip [20]="0.0.0.0";
+    setup_WiFiManager(MQTT_string_ip,20);
     setup_OTA();
     setup_WS();
     setup_Server();
@@ -129,7 +163,7 @@ void setup()
     myRelays = new RelayTimer(PINS_NUM, pins); 
     myRelays->addListener(send_mes_WS);
     #ifdef MQTT_ADD
-    myMQTT = new MqtTHelper(MQTTSERV);
+    myMQTT = new MqtTHelper(MQTT_string_ip, "relay", "mishrelay");
     myRelays->addListener(&MqtTHelper::pubMqttMessage);
     #endif
 }
@@ -149,4 +183,7 @@ void loop() {
     ArduinoOTA.handle();  
     timeClient->update();
     getPeriodically();
+    #ifdef MQTT_ADD
+    myMQTT->reconnect();
+    #endif
 }
