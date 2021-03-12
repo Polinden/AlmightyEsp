@@ -53,10 +53,10 @@ MqtTHelper::~MqtTHelper(){
 void MqtTHelper::reconnect() {
         if (dissabled) return;
         if (all_tries>MAX_TRY) return;
-        if (client.connected()) {
+        if (client.loop ()) {
             all_tries=0;
             connected=true;
-            client.loop ();
+
             return;  
         };
         connected=false;

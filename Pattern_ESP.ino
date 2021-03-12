@@ -19,9 +19,9 @@ AsyncWebServer webServer(80);
 AsyncWebSocket ws("/ws");
 DNSServer dnsServer; 
 RelayTimer * myRelays=NULL;
+char MQTT_string_ip [20]="0.0.0.0";
 #ifdef MQTT_ADD
 MqtTHelper * myMQTT=NULL;
-char MQTT_string_ip [20]="0.0.0.0";
 #endif
 #define ESP_DRD_USE_LITTLEFS  false
 #define ESP_DRD_USE_SPIFFS    false
@@ -116,13 +116,16 @@ void setup_WiFiManager(char * mqtt, size_t len) {
     if (ESPAsync_wifiManager.WiFi_SSID()=="") initialConfig=true;
     if (drd->detectDoubleReset()) initialConfig=true;
     if (initialConfig) inConfig(&ESPAsync_wifiManager, mqtt, len);
+    else { WiFi.mode(WIFI_STA); WiFi.begin(); }
+    //ESPAsync_wifiManager.resetSettings();
+    Serial.println(ESPAsync_wifiManager.WiFi_SSID());
+    Serial.println(ESPAsync_wifiManager.WiFi_Pass());
     #ifdef MQTT_ADD
     for(size_t i=0;i<len;i++) mqtt[i]=(char)EEPROM.read(0x0F+i); 
     mqtt[len]='\0';
     Serial.print("Mqtt -> ");
     Serial.println(mqtt);
     #endif
-    Serial.println(mqtt);
     WiFi.waitForConnectResult();
     if (WiFi.status() == WL_CONNECTED) { Serial.print(F("Connected. Local IP: ")); Serial.println(WiFi.localIP()); }
     else { Serial.println("Not connected!");}
@@ -166,6 +169,7 @@ void setup()
 {
     Serial.begin(115200); 
     while (!Serial); 
+    Serial.println("Start the board!");
     EEPROM.begin(512);
     delay(200);
     setup_WiFiManager(MQTT_string_ip,20);
@@ -204,5 +208,5 @@ void loop() {
     #ifdef MQTT_ADD
     myMQTT->reconnect();
     #endif
-    drd->loop();
+    if (drd) drd->loop();
 }
