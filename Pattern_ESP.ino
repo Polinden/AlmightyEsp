@@ -10,7 +10,7 @@
 #include <GyverTimer.h> 
 #include "index.html.h"
 #include "Relay.h"
-//#include "MQTT.h"
+#include "MQTT.h"
 //#include "RHelper.h"
 
 
@@ -23,6 +23,7 @@ RelayTimer * myRelays=NULL;
 DoubleResetDetector* drd;
 #ifdef MQTT_ADD
 MqtTHelper * myMQTT=NULL;
+char MQTT_string_ip [20]="0.0.0.0";
 #endif
 #if defined ESP8266
   #define USE_LITTLEFS            false
@@ -167,7 +168,6 @@ void setup()
     while (!Serial); 
     EEPROM.begin(512);
     delay(200);
-    char MQTT_string_ip [20]="0.0.0.0";
     setup_WiFiManager(MQTT_string_ip,20);
     setup_OTA();
     setup_WS();
@@ -189,7 +189,7 @@ void getPeriodically(){
      cur_s=timeClient->getSeconds();
      myRelays->checkRelay(cur_h, cur_m, cur_s);
      #ifdef MQTT_ADD
-     send_mes_WS("mqtt:", MqtTHelper::connected?"connected":"disconnected");  
+     send_mes_WS("mqtt:", MqtTHelper::connected?MQTT_string_ip:"disconnected");  
      #endif
    }
 }

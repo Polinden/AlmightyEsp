@@ -62,7 +62,9 @@ void MqtTHelper::reconnect() {
         connected=false;
         if ((millis()-tries)>DELAY_MQ) {
             tries=millis();
-            client.connect(DEVNAME);
+            String clientId = String(DEVNAME);
+            clientId += String(random(0xffff), HEX);
+            client.connect(clientId.c_str());
             client.subscribe(sub_topic);
             all_tries++;
         };
@@ -93,4 +95,4 @@ char MqtTHelper::pub_topic [20]="";
 char MqtTHelper::sub_topic [20]="";
 bool MqtTHelper::dissabled=true;
 bool MqtTHelper::connected=false;
-bool  MqtTHelper::published=false;
+bool MqtTHelper::published=false;

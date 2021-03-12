@@ -41,7 +41,7 @@ HTMLPAGE = R"===(
     display: inline-block;
   }
   #mqstatus{
-    width:98px;
+    width:108px;
   }
   .bootstrap-timepicker-widget table td input {
     font-size: 70%;
