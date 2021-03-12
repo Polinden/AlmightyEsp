@@ -24,10 +24,9 @@ DoubleResetDetector* drd;
 #ifdef MQTT_ADD
 MqtTHelper * myMQTT=NULL;
 char MQTT_string_ip [20]="0.0.0.0";
-#endif
-#if defined ESP8266
-  #define USE_LITTLEFS            false
-  #define ESP_DRD_USE_LITTLEFS    true
+#define ESP_DRD_USE_LITTLEFS  false
+#define ESP_DRD_USE_SPIFFS    false
+#define ESP_DRD_USE_EEPROM    true
 #endif
 int pins [] = PINS_AR;
 int cur_h;
