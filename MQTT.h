@@ -52,14 +52,14 @@ MqtTHelper::~MqtTHelper(){
 
 void MqtTHelper::reconnect() {
         if (dissabled) return;
-        client.loop ();
-        connected=false;
         if (all_tries>MAX_TRY) return;
         if (client.connected()) {
             all_tries=0;
             connected=true;
+            client.loop ();
             return;  
         };
+        connected=false;
         if ((millis()-tries)>DELAY_MQ) {
             tries=millis();
             client.connect(DEVNAME);
