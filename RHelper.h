@@ -1,6 +1,4 @@
 
-
-#define REQUEST_ADD
 #ifdef ESP32
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -12,7 +10,7 @@
 #include <ESPAsyncTCP.h>
 #endif
 #include <AsyncHTTPRequest_Generic.h>
-
+#define REQUEST_ADD
 
 typedef void (*ListenerHTTP) (void*, AsyncHTTPRequest*, int);
 

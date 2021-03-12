@@ -11,7 +11,6 @@
 #define TOPIC_COM "mrelay2"
 
 #define MQTT_PORT 1883
-#define MQTT_ADD
 #define MAX_TRY 1000
 #define DELAY_MQ 2000
 #define DRD_TIMEOUT 30
