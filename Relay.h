@@ -52,7 +52,7 @@ void RelayTimer::updateTimer(int n, const char * time, const char * st){
          relaySTimes[n].stop_h=parseTime(time)/60;
          relaySTimes[n].stop_m=parseTime(time)%60;
       }
-      informListeners("test ", time);
+      //informListeners("test ", time);
 }
 
 
@@ -63,12 +63,12 @@ void RelayTimer::updateRelay(int n, boolean stat){
     char buf [10];
     itoa(n,buf,10);
     strcat(buf, stat?"=on":"=off");
-    informListeners("relay", buf);
+    informListeners(TOPIC_INF, buf);
 }
 
 
 
-void RelayTimer::checkRelay(int cur_h, int cur_m, boolean with_report=true){
+void RelayTimer::checkRelay(int cur_h, int cur_m, int cur_s, boolean with_report=true){
      int z,x,y=0;
      for (int i=0; i<numRelays; i++) {
       z=cur_m+cur_h*60;
@@ -80,7 +80,7 @@ void RelayTimer::checkRelay(int cur_h, int cur_m, boolean with_report=true){
          if (cur_h==0 && relaySTimes[i].start_h==24) z=cur_m+24*60;   
          if (z>=x) {updateRelay(i, true); relaySTimes[i].start_h=100; relaySTimes[i].start_m=100;}   
       }
-      if (with_report) reportListeners(cur_h, cur_m);
+      if (with_report) reportListeners(cur_h, cur_m, cur_s);
    }
 }
 
@@ -101,7 +101,7 @@ int RelayTimer::parseTime(const char * c){
 }
 
 
-void RelayTimer::reportListeners(int cur_h, int cur_m){
+void RelayTimer::reportListeners(int cur_h, int cur_m, int cur_s){
    char buf [200];
    DynamicJsonDocument doc(512);
    for (int i=0; i<numRelays; i++) { 
@@ -114,6 +114,7 @@ void RelayTimer::reportListeners(int cur_h, int cur_m){
       doc["timer"][i]["stop_m"]=relaySTimes[i].stop_m;
       doc["time"]["h"]=cur_h;
       doc["time"]["m"]=cur_m;
+      doc["time"]["s"]=cur_s;
    }
    serializeJson(doc, buf);
    informListeners("status", buf);

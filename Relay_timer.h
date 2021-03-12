@@ -22,8 +22,8 @@ public:
     void removeListener(int lis);
     void updateRelay(int n, boolean stat);
     void updateTimer(int n, const char * time, const char * st);
-    void checkRelay(int cur_h, int cur_m, boolean with_report);
-    void reportListeners(int cur_h, int cur_m);
+    void checkRelay(int cur_h, int cur_m, int cur_s, boolean with_report);
+    void reportListeners(int cur_h, int cur_m, int cur_s);
     
 private:
     Reltime * relaySTimes;

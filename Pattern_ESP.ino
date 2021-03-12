@@ -1,7 +1,8 @@
 
 
 #include "settings.h"
-#include <ESPAsync_WiFiManager.h>    
+#include <ESPAsync_WiFiManager.h>  
+#include <ESP_DoubleResetDetector.h>    
 #include <ArduinoOTA.h>  
 #include <NTPClient.h>  
 #include <WiFiUdp.h>
@@ -19,12 +20,18 @@ AsyncWebServer webServer(80);
 AsyncWebSocket ws("/ws");
 DNSServer dnsServer; 
 RelayTimer * myRelays=NULL;
+DoubleResetDetector* drd;
 #ifdef MQTT_ADD
 MqtTHelper * myMQTT=NULL;
+#endif
+#if defined ESP8266
+  #define USE_LITTLEFS            false
+  #define ESP_DRD_USE_LITTLEFS    true
 #endif
 int pins [] = PINS_AR;
 int cur_h;
 int cur_m;
+int cur_s;
 bool initialConfig = false;
 
 
@@ -103,34 +110,16 @@ void setup_OTA(){
 
 
 void setup_WiFiManager(char * mqtt, size_t len) {
-    ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, DEVNAME);
-    //ESPAsync_wifiManager.resetSettings();  
+    drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+    ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, DEVNAME); 
     if (ESPAsync_wifiManager.WiFi_SSID()=="") initialConfig=true;
-    if (initialConfig) {
-      #ifdef MQTT_ADD
-      ESPAsync_WMParameter MQTT_name ("MQTT_ip_label", "MQTT_ip", mqtt, len+1);
-      ESPAsync_wifiManager.addParameter(&MQTT_name);
-      #endif
-      if (ESPAsync_wifiManager.startConfigPortal(DEVNAME, "admin")) {
-         #ifdef MQTT_ADD
-         strcpy(mqtt, MQTT_name.getValue());
-         for(int i=0;i<len;i++) EEPROM.write(0x0F+i, mqtt[i]); 
-         EEPROM.commit(); 
-         #endif
-      }
-      else {
-         ESPAsync_wifiManager.resetSettings();
-         #ifdef ESP8266
-         ESP.reset();
-         #else    
-         ESP.restart();
-         #endif
-         delay(6000);
-      };
-    };
+    if (drd->detectDoubleReset()) initialConfig=true;
+    if (initialConfig) inConfig(&ESPAsync_wifiManager, mqtt, len);
     #ifdef MQTT_ADD
-    for(int i=0;i<len;i++) mqtt[i]=(char)EEPROM.read(0x0F+i); 
+    for(size_t i=0;i<len;i++) mqtt[i]=(char)EEPROM.read(0x0F+i); 
     mqtt[len]='\0';
+    Serial.print("Mqtt -> ");
+    Serial.println(mqtt);
     #endif
     Serial.println(mqtt);
     WiFi.waitForConnectResult();
@@ -138,10 +127,34 @@ void setup_WiFiManager(char * mqtt, size_t len) {
     else { Serial.println("Not connected!");}
 }
 
+void inConfig(ESPAsync_WiFiManager * ewm, char * mqtt, size_t len){
+      ESPAsync_WiFiManager ESPAsync_wifiManager = *ewm;
+      #ifdef MQTT_ADD
+      ESPAsync_WMParameter MQTT_name ("MQTT_ip_label", "MQTT_ip", mqtt, len+1);
+      ESPAsync_wifiManager.addParameter(&MQTT_name);
+      #endif
+      if (!ESPAsync_wifiManager.startConfigPortal(DEVNAME, "admin")) {
+         ESPAsync_wifiManager.resetSettings();
+         #ifdef ESP8266
+         ESP.reset();
+         #else    
+         ESP.restart();
+         #endif
+         delay(6000);
+      }
+      #ifdef MQTT_ADD
+      strcpy(mqtt, MQTT_name.getValue());
+      for(size_t i=0;i<len;i++) EEPROM.write(0x0F+i, mqtt[i]); 
+      EEPROM.commit(); 
+      #endif
+}
+
+
 void setup_WS(){
   //ws.onEvent(onWsEvent);
   webServer.addHandler(&ws);
 }
+
 
 void NTP_setup(){
   timeClient=new NTPClient(ntpUDP, NTPSERV, TIMESHIFT, 60000); 
@@ -163,7 +176,7 @@ void setup()
     myRelays = new RelayTimer(PINS_NUM, pins); 
     myRelays->addListener(send_mes_WS);
     #ifdef MQTT_ADD
-    myMQTT = new MqtTHelper(MQTT_string_ip, "relay", "mishrelay");
+    myMQTT = new MqtTHelper(MQTT_string_ip, TOPIC_INF, TOPIC_COM);
     myRelays->addListener(&MqtTHelper::pubMqttMessage);
     #endif
 }
@@ -173,8 +186,11 @@ void getPeriodically(){
    if (myTimer.isReady()) {
      cur_h=timeClient->getHours();
      cur_m=timeClient->getMinutes();
-     myRelays->checkRelay(cur_h, cur_m);
-     send_mes_WS("time:", timeClient->getFormattedTime().c_str());  
+     cur_s=timeClient->getSeconds();
+     myRelays->checkRelay(cur_h, cur_m, cur_s);
+     #ifdef MQTT_ADD
+     send_mes_WS("mqtt:", MqtTHelper::connected?"connected":"disconnected");  
+     #endif
    }
 }
 
@@ -186,4 +202,5 @@ void loop() {
     #ifdef MQTT_ADD
     myMQTT->reconnect();
     #endif
+    drd->loop();
 }

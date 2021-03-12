@@ -1,10 +1,7 @@
 
 #include <PubSubClient.h>
 #include "settings.h"
-#define MQTT_PORT 1883
 #define MQTT_ADD
-#define MAX_TRY 10
-#define DELAY_MQ 2000
 #ifdef ESP32
 #include <WiFi.h>
 #endif
@@ -27,6 +24,7 @@ public:
     static unsigned long all_tries;
     static bool published;
     static bool dissabled;
+    static bool connected;
     static char pub_topic [20];
     static char sub_topic [20];
 private:
@@ -43,6 +41,8 @@ MqtTHelper::MqtTHelper(const char* host, const char* pub, const char* sub)  {
   strncpy(pub_topic, pub, strlen(pub));
   strncpy(sub_topic, sub, strlen(sub));
   dissabled=false;
+  connected=false;
+  published=false;
   }
 }
 
@@ -53,9 +53,11 @@ MqtTHelper::~MqtTHelper(){
 void MqtTHelper::reconnect() {
         if (dissabled) return;
         client.loop ();
+        connected=false;
         if (all_tries>MAX_TRY) return;
         if (client.connected()) {
             all_tries=0;
+            connected=true;
             return;  
         };
         if ((millis()-tries)>DELAY_MQ) {
@@ -78,7 +80,7 @@ void MqtTHelper::callback(char* topic, byte* payload, unsigned int length) {
         Serial.print("Message arrived [");
         Serial.print(topic);
         Serial.print("] ");
-        for (int i = 0; i < length; i++) {
+        for (unsigned int i = 0; i < length; i++) {
             Serial.print((char)payload[i]);
         }
         Serial.println();
@@ -86,8 +88,9 @@ void MqtTHelper::callback(char* topic, byte* payload, unsigned int length) {
 
 
 unsigned long MqtTHelper::tries=millis();
-bool  MqtTHelper::published=false;
 unsigned long  MqtTHelper::all_tries=0;
 char MqtTHelper::pub_topic [20]="";
 char MqtTHelper::sub_topic [20]="";
 bool MqtTHelper::dissabled=true;
+bool MqtTHelper::connected=false;
+bool  MqtTHelper::published=false;

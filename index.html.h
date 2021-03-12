@@ -28,16 +28,20 @@ HTMLPAGE = R"===(
       padding:0;
       }
   }
-  #time
+ #time, #mqstatus
   {
     margin-top:3px;
-    font-size:20px;
+    font-size:14px;
     color:silver;
     border:2px dashed #2E9AFE;
     padding:5px;
-    width:92px;
+    width:70px;
     margin-left:5px;
     margin-bottom:3px;
+    display: inline-block;
+  }
+  #mqstatus{
+    width:98px;
   }
   .bootstrap-timepicker-widget table td input {
     font-size: 70%;
@@ -123,9 +127,9 @@ HTMLPAGE = R"===(
       </tbody>
       <tbody>
         <tr style="border-bottom: 3px solid white">
-            <th scope="row">Time</th>
+            <th scope="row">Info</th>
             <td>
-             <p id="time">{{time}}</p>
+             <p id="time">{{time}}</p>{{ " " }}<p id="mqstatus">{{mqttst}}</p>
             </td>
         </tr>
       </tbody>
@@ -184,13 +188,7 @@ HTMLPAGE = R"===(
     },
 
     parseData: function (data){
-    //case 1        
-    if (data.startsWith("time")){
-          i=data.indexOf(":");
-          e=data.substring(i+3);
-          this.time=e;
-        };
-    //case 2  
+    //case 1 
      if (data.startsWith("status")){
        i=data.indexOf(":");
        e=data.substring(i+1);
@@ -245,15 +243,22 @@ HTMLPAGE = R"===(
         var b=bh+q[i].stop_m;
         var d=dh+q[i].start_m;
         this.timeLapse[i]=100.0-((b-a)*100.0)/(b-c)+'%';   
-        this.timePass[i]=100.0-((d-a)*100.0)/(d-c)+'%';                    
+        this.timePass[i]=100.0-((d-a)*100.0)/(d-c)+'%';  
+        this.time=p.h+((p.m<10)?":0":":")+p.m+((p.s<10)?":0":":")+p.s;   
        }
       };
-     //case 3      
+     //case 2      
      if (data.startsWith("test")){
           i=data.indexOf(":");
           e=data.substring(i+1);
           console.log(e);
         };
+     //case 3      
+     if (data.startsWith("mqtt")){
+          i=data.indexOf(":");
+          e=data.substring(i+3);
+          this.mqttst=e;
+        };  
     }   
   },
   data: function() {
@@ -292,7 +297,8 @@ HTMLPAGE = R"===(
     sAct1: z7,
     sAct2: z8,
     timeLapse: z9,
-    timePass: z10
+    timePass: z10,
+    mqttst: "disconnected"
     }
   },
   created: function() {
