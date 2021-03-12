@@ -10,6 +10,7 @@ HTMLPAGE = R"===(
 <meta charset="utf-8" />
 <title>Keyboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-control" content="public">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" crossorigin="anonymous">
 </head>

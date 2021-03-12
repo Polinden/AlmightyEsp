@@ -1,8 +1,7 @@
 
 
 #include "settings.h"
-#include <ESPAsync_WiFiManager.h>  
-#include <ESP_DoubleResetDetector.h>    
+#include <ESPAsync_WiFiManager.h>     
 #include <ArduinoOTA.h>  
 #include <NTPClient.h>  
 #include <WiFiUdp.h>
@@ -20,14 +19,15 @@ AsyncWebServer webServer(80);
 AsyncWebSocket ws("/ws");
 DNSServer dnsServer; 
 RelayTimer * myRelays=NULL;
-DoubleResetDetector* drd;
 #ifdef MQTT_ADD
 MqtTHelper * myMQTT=NULL;
 char MQTT_string_ip [20]="0.0.0.0";
+#endif
 #define ESP_DRD_USE_LITTLEFS  false
 #define ESP_DRD_USE_SPIFFS    false
 #define ESP_DRD_USE_EEPROM    true
-#endif
+#include <ESP_DoubleResetDetector.h> 
+DoubleResetDetector* drd;
 int pins [] = PINS_AR;
 int cur_h;
 int cur_m;
@@ -35,7 +35,8 @@ int cur_s;
 bool initialConfig = false;
 
 
-GTimer myTimer(MS, 1000);
+GTimer myTimer1(MS, 1000);
+GTimer myTimer2(MS, 3000);
 
 
 void setup_Server(){
@@ -182,11 +183,13 @@ void setup()
 
 
 void getPeriodically(){
-   if (myTimer.isReady()) {
+   if (myTimer1.isReady()) {
      cur_h=timeClient->getHours();
      cur_m=timeClient->getMinutes();
      cur_s=timeClient->getSeconds();
      myRelays->checkRelay(cur_h, cur_m, cur_s);
+   }
+   if (myTimer2.isReady()) {   
      #ifdef MQTT_ADD
      send_mes_WS("mqtt:", MqtTHelper::connected?MQTT_string_ip:"disconnected");  
      #endif
