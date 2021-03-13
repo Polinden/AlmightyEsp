@@ -1,5 +1,5 @@
 
-#include <PubSubClient.h>
+#include <AsyncMqttClient.h>
 #include "settings.h"
 #define MQTT_ADD
 #ifdef ESP32
@@ -10,8 +10,8 @@
 #endif
 #define MQTT_ADD
 
-WiFiClient espClient;
-PubSubClient client(espClient);
+AsyncMqttClient mqttClient;
+typedef void (*MListener)(const char *);
 
 
 class MqtTHelper{
@@ -19,16 +19,19 @@ public:
     MqtTHelper(const char* ip, const char* pub="", const char* sub="");
     ~MqtTHelper(); 
     static void pubMqttMessage(const char* topic, const char* payload);
+    static void registerLis(MListener lis);
     static void reconnect();
+    static bool connected;
+private:
+    static void callback(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
+    static void onMqttConnect(bool sessionPresent);
     static unsigned long tries;
     static int all_tries;
     static bool published;
     static bool dissabled;
-    static bool connected;
     static char pub_topic [20];
     static char sub_topic [20];
-private:
-    static void callback(char* topic, byte* payload, unsigned int length);
+    static MListener mlis;
 };
 
 
@@ -36,19 +39,17 @@ MqtTHelper::MqtTHelper(const char* host, const char* pub, const char* sub)  {
   if (strstr(host, "0.0.0.0")) return;
   auto ip=new IPAddress();
   if (ip->fromString(host)) {
-  client.setServer(*ip, 1883);
-  client.setSocketTimeout(MQTT_TO);
-  client.setCallback(&MqtTHelper::callback);
   strncpy(pub_topic, pub, strlen(pub));
   strncpy(sub_topic, sub, strlen(sub));
+  mqttClient.onMessage(callback);
+  mqttClient.onConnect(onMqttConnect);
+  mqttClient.setServer(*ip, MQTT_PORT); 
   dissabled=false;
-  connected=false;
-  published=false;
   }
 }
 
 MqtTHelper::~MqtTHelper(){
-  if (client.connected()) client.disconnect ();
+  mqttClient.disconnect(true);
   dissabled=true;
 }
 
@@ -56,41 +57,40 @@ MqtTHelper::~MqtTHelper(){
 void MqtTHelper::reconnect() {
         if (dissabled) return;
         if (all_tries>MAX_TRY) return;
-        if (client.connected()) {
-            client.loop();
+        if (mqttClient.connected()) {
             connected=true;
             return;  
         }
         else connected=false;
         if ((millis()-tries)>DELAY_MQ) {
-            String clientId = String(DEVNAME);
-            clientId += String(random(0xffff), HEX);
-            if (client.connect(clientId.c_str())) {
-              all_tries=0;
-              connected=true;
-              client.subscribe(sub_topic, 1);
+            mqttClient.connect();
+            if (mqttClient.connected()) { 
+                 all_tries=0;
+                 connected=true;
             }
             else all_tries++;  
             tries=millis();
         } 
 }
 
+void MqtTHelper::onMqttConnect(bool sessionPresent) {
+        mqttClient.subscribe(sub_topic, 1); 
+}
+
 void MqtTHelper::pubMqttMessage(const char* topic, const char* payload){
     if (dissabled) return;
     if (strcmp(topic, pub_topic)!=0) return;
-    if (connected){
-       published=client.publish(topic, payload, true);
+    if (mqttClient.connected()){
+       mqttClient.publish(topic, 1, true, payload);
     }
 }
 
-void MqtTHelper::callback(char* topic, byte* payload, unsigned int length) {
-        Serial.print("Message arrived [");
-        Serial.print(topic);
-        Serial.print("] ");
-        for (unsigned int i = 0; i < length; i++) {
-            Serial.print((char)payload[i]);
-        }
-        Serial.println();
+void MqtTHelper::callback(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+  if (mlis) mlis(payload);
+}
+
+void MqtTHelper::registerLis(MListener lis) {
+  mlis=lis;
 }
 
 
@@ -101,3 +101,4 @@ char MqtTHelper::sub_topic [20]="";
 bool MqtTHelper::dissabled=true;
 bool MqtTHelper::connected=false;
 bool MqtTHelper::published=false;
+MListener MqtTHelper::mlis=NULL;

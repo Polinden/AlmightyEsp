@@ -182,9 +182,28 @@ void setup()
     #ifdef MQTT_ADD
     myMQTT = new MqtTHelper(MQTT_string_ip, TOPIC_INF, TOPIC_COM);
     myRelays->addListener(&MqtTHelper::pubMqttMessage);
+    myMQTT->registerLis(omMQTTmess);
     #endif
 }
 
+
+#ifdef MQTT_ADD
+void omMQTTmess(const char * pl){
+   int h=0;
+   bool st=false;
+   char substr [4];
+   char * p=strstr(pl, "=");
+   if(p!=NULL) {
+       if ((size_t)(p-pl)>3) return;
+       strncpy(substr, pl, (size_t)(p-pl)); 
+       h=atoi(substr);
+       strncpy(substr, p+1, 3);
+       if (strstr(substr, "on"))  st=true;
+       else if (!strstr(substr, "of")) return;
+       if (h>0) myRelays->updateRelay(h-1, st);
+   }
+}
+#endif
 
 void getPeriodically(){
    if (myTimer1.isReady()) {

@@ -52,7 +52,6 @@ void RelayTimer::updateTimer(int n, const char * time, const char * st){
          relaySTimes[n].stop_h=parseTime(time)/60;
          relaySTimes[n].stop_m=parseTime(time)%60;
       }
-      //informListeners("test ", time);
 }
 
 
