@@ -28,7 +28,7 @@ MqtTHelper * myMQTT=NULL;
 #define ESP_DRD_USE_EEPROM    true
 #include <ESP_DoubleResetDetector.h> 
 DoubleResetDetector* drd;
-int pins [] = PINS_AR;
+int pins [PINS_NUM] = PINS_AR;
 int cur_h;
 int cur_m;
 int cur_s;
@@ -36,7 +36,7 @@ bool initialConfig = false;
 
 
 GTimer myTimer1(MS, 1000);
-GTimer myTimer2(MS, 3000);
+GTimer myTimer2(MS, 5000);
 
 
 void setup_Server(){
@@ -114,7 +114,7 @@ void setup_WiFiManager(char * mqtt, size_t len) {
     drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
     ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, DEVNAME); 
     if (ESPAsync_wifiManager.WiFi_SSID()=="") initialConfig=true;
-    if (drd->detectDoubleReset()) initialConfig=true;
+    if (drd) if (drd->detectDoubleReset()) initialConfig=true;
     if (initialConfig) inConfig(&ESPAsync_wifiManager, mqtt, len);
     else { WiFi.mode(WIFI_STA); WiFi.begin(); }
     //ESPAsync_wifiManager.resetSettings();

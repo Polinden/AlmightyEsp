@@ -11,7 +11,7 @@ RelayTimer::RelayTimer(int num, int * pins){
        relaySTimes[i].stop_h=100; relaySTimes[i].stop_m=100;
        relaySTimes[i].start_h=100; relaySTimes[i].start_m=100;   
    }
-   memcpy (relaySPins, pins, num); 
+   memcpy (relaySPins, pins, num * sizeof(int)); 
    listeners = (RListener *) malloc(MAXLIS * sizeof(RListener));
    initRelays();
 }

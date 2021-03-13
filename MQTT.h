@@ -21,7 +21,7 @@ public:
     static void pubMqttMessage(const char* topic, const char* payload);
     static void reconnect();
     static unsigned long tries;
-    static unsigned long all_tries;
+    static int all_tries;
     static bool published;
     static bool dissabled;
     static bool connected;
@@ -33,11 +33,12 @@ private:
 
 
 MqtTHelper::MqtTHelper(const char* host, const char* pub, const char* sub)  {
+  if (strstr(host, "0.0.0.0")) return;
   auto ip=new IPAddress();
   if (ip->fromString(host)) {
   client.setServer(*ip, 1883);
+  client.setSocketTimeout(MQTT_TO);
   client.setCallback(&MqtTHelper::callback);
-  client.subscribe (sub);
   strncpy(pub_topic, pub, strlen(pub));
   strncpy(sub_topic, sub, strlen(sub));
   dissabled=false;
@@ -47,33 +48,37 @@ MqtTHelper::MqtTHelper(const char* host, const char* pub, const char* sub)  {
 }
 
 MqtTHelper::~MqtTHelper(){
+  if (client.connected()) client.disconnect ();
+  dissabled=true;
 }
 
 
 void MqtTHelper::reconnect() {
         if (dissabled) return;
         if (all_tries>MAX_TRY) return;
-        if (client.loop ()) {
-            all_tries=0;
+        if (client.connected()) {
+            client.loop();
             connected=true;
-
             return;  
-        };
-        connected=false;
+        }
+        else connected=false;
         if ((millis()-tries)>DELAY_MQ) {
-            tries=millis();
             String clientId = String(DEVNAME);
             clientId += String(random(0xffff), HEX);
-            client.connect(clientId.c_str());
-            client.subscribe(sub_topic);
-            all_tries++;
-        };
+            if (client.connect(clientId.c_str())) {
+              all_tries=0;
+              connected=true;
+              client.subscribe(sub_topic, 1);
+            }
+            else all_tries++;  
+            tries=millis();
+        } 
 }
 
 void MqtTHelper::pubMqttMessage(const char* topic, const char* payload){
     if (dissabled) return;
     if (strcmp(topic, pub_topic)!=0) return;
-    if (client.connected()){
+    if (connected){
        published=client.publish(topic, payload, true);
     }
 }
@@ -90,7 +95,7 @@ void MqtTHelper::callback(char* topic, byte* payload, unsigned int length) {
 
 
 unsigned long MqtTHelper::tries=millis();
-unsigned long  MqtTHelper::all_tries=0;
+int  MqtTHelper::all_tries=0;
 char MqtTHelper::pub_topic [20]="";
 char MqtTHelper::sub_topic [20]="";
 bool MqtTHelper::dissabled=true;
