@@ -12,6 +12,7 @@
 
 #define MQTT_PORT 1883
 #define MAX_TRY 3
+#define MQTT_QOS 1
 
 #define DELAY_MQ 3000
 #define DRD_TIMEOUT 30

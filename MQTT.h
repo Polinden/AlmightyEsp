@@ -74,14 +74,14 @@ void MqtTHelper::reconnect() {
 }
 
 void MqtTHelper::onMqttConnect(bool sessionPresent) {
-        mqttClient.subscribe(sub_topic, 1); 
+        mqttClient.subscribe(sub_topic, MQTT_QOS); 
 }
 
 void MqtTHelper::pubMqttMessage(const char* topic, const char* payload){
     if (dissabled) return;
     if (strcmp(topic, pub_topic)!=0) return;
     if (mqttClient.connected()){
-       mqttClient.publish(topic, 1, true, payload);
+       mqttClient.publish(topic, MQTT_QOS, true, payload);
     }
 }
 
