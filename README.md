@@ -37,7 +37,7 @@
 Но для чего-то покруче, можете взять несколько любых совместимых реле и подключить их ко множеству подходящих GPIO. Вы получите мега-реле без проблем.
 
 <p align="left">
-  <img src="assets/inside.png" width="700" title="Inside">
+  <img src="assets/solded.png" width="700" title="Inside">
 </p>
 
 
